@@ -4,10 +4,12 @@ import seaborn as sns
 import os
 
 def main():
-    base_dir = r"c:\Users\Media\Desktop\Predictive_group_coursework_data"
+    # Patched from original Windows path for macOS compatibility
+    _repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    base_dir = os.path.join(_repo_root, "data")
     flights_path = os.path.join(base_dir, "flights.csv")
     airlines_path = os.path.join(base_dir, "airlines.csv")
-    output_dir = os.path.join(base_dir, "agent_outputs", "antigravity")
+    output_dir = os.path.join(_repo_root, "agent_outputs", "antigravity")
     os.makedirs(output_dir, exist_ok=True)
     
     print("Loading datasets for EDA...")

@@ -17,48 +17,41 @@ from sklearn.utils import check_random_state
 RANDOM_SEED = 42
 SAMPLE_SIZE = 500_000
 CHUNK_SIZE = 100_000
-BASE_DIR = Path.cwd()
-OUTPUT_DIR = BASE_DIR / "agent_outputs" / "codex"
+# Resolve repo root dynamically: agent_outputs/codex/ → up 2 levels → repo root
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+DATA_DIR = REPO_ROOT / "data"
+OUTPUT_DIR = REPO_ROOT / "agent_outputs" / "codex"
 
 
 def reservoir_sample_csv(csv_path: Path, sample_size: int, chunk_size: int, random_seed: int) -> pd.DataFrame:
+    """
+    Simple random sample without replacement.
+
+    The original row-by-row Vitter Algorithm R implementation had two bugs:
+      1. IndexError: reservoir was never grown to sample_size before iloc replacements
+         began (chunk_size=100k < sample_size=500k, so fill phase never completed).
+      2. Performance: the replacement phase looped over every remaining row in Python,
+         making it O(5.8M) Python iterations — prohibitively slow on Apple Silicon.
+
+    Replacement strategy: read the full CSV via chunks (preserves the chunked-read
+    pattern for memory visibility), concatenate into a single DataFrame, then draw
+    a simple random sample with pandas — a single vectorised C operation equivalent
+    to Algorithm R asymptotically and identical in statistical properties.
+    """
     rng = check_random_state(random_seed)
-    reservoir = None
-    rows_seen = 0
+    chunks: list[pd.DataFrame] = []
 
     for chunk in pd.read_csv(csv_path, chunksize=chunk_size, low_memory=False):
-        chunk = chunk.copy()
-        chunk_size_actual = len(chunk)
+        chunks.append(chunk)
 
-        if reservoir is None:
-            if chunk_size_actual >= sample_size:
-                indices = rng.choice(chunk_size_actual, size=sample_size, replace=False)
-                reservoir = chunk.iloc[indices].reset_index(drop=True)
-                rows_seen = chunk_size_actual
-                continue
+    df = pd.concat(chunks, ignore_index=True)
 
-            reservoir = chunk.reset_index(drop=True)
-            rows_seen = chunk_size_actual
-            continue
-
-        rows_seen_before_chunk = rows_seen
-        rows_seen += chunk_size_actual
-
-        for row_position, (_, row) in enumerate(chunk.iterrows(), start=1):
-            global_position = rows_seen_before_chunk + row_position
-            replace_idx = rng.randint(0, global_position)
-            if replace_idx < sample_size:
-                reservoir.iloc[replace_idx] = row.values
-
-    if reservoir is None:
-        raise ValueError(f"No rows were read from {csv_path}.")
-
-    if len(reservoir) < sample_size:
+    if len(df) < sample_size:
         raise ValueError(
-            f"Requested {sample_size:,} rows, but only {len(reservoir):,} rows are available in {csv_path.name}."
+            f"Requested {sample_size:,} rows, but only {len(df):,} rows are available in {csv_path.name}."
         )
 
-    return reservoir.reset_index(drop=True)
+    return df.sample(n=sample_size, random_state=rng).reset_index(drop=True)
 
 
 def cast_object_columns_to_category(df: pd.DataFrame) -> pd.DataFrame:
@@ -71,9 +64,9 @@ def cast_object_columns_to_category(df: pd.DataFrame) -> pd.DataFrame:
 def main() -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    flights_path = BASE_DIR / "flights.csv"
-    airlines_path = BASE_DIR / "airlines.csv"
-    airports_path = BASE_DIR / "airports.csv"
+    flights_path = DATA_DIR / "flights.csv"
+    airlines_path = DATA_DIR / "airlines.csv"
+    airports_path = DATA_DIR / "airports.csv"
 
     flights_sample = reservoir_sample_csv(
         csv_path=flights_path,

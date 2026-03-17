@@ -5,8 +5,8 @@ import pandas as pd
 import seaborn as sns
 
 
-BASE_DIR = Path.cwd()
-OUTPUT_DIR = BASE_DIR / "agent_outputs" / "codex"
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+OUTPUT_DIR = REPO_ROOT / "agent_outputs" / "codex"
 DATA_PATH = OUTPUT_DIR / "flights_sampled_joined_model_ready.pkl"
 
 
@@ -69,7 +69,7 @@ def main():
     plt.close()
 
     route_summary = (
-        analysis_df.groupby(["route", "ORIGIN_AIRPORT", "DESTINATION_AIRPORT"], observed=False)
+        analysis_df.groupby(["route", "ORIGIN_AIRPORT", "DESTINATION_AIRPORT"], observed=True)
         .agg(
             flights=("delayed_15", "size"),
             delay_rate=("delayed_15", "mean"),
