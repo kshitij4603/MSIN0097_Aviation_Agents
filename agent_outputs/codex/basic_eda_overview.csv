@@ -1,0 +1,6 @@
+metric,value
+completed_flights,5714008.0
+mean_arrival_delay,4.407057357987598
+median_arrival_delay,-5.0
+p90_arrival_delay,34.0
+share_15_plus_delay_pct,18.611086998828146
