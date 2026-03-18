@@ -1,0 +1,5 @@
+Breusch-Pagan test results:
+Lagrange multiplier stat: 51214.17506262406
+p-value: 0.0
+f-value: 12919.327411394645
+f p-value: 0.0
