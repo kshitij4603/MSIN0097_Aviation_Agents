@@ -1,0 +1,20 @@
+﻿Loading data from C:\Users\Media\Desktop\Predictive_group_coursework_data\MSIN0097_Aviation_Agents\data\flights.csv
+python : Traceback (most recent call last):
+At line:1 char:88
++ ... on_Agents'; python agent_outputs\antigravity\task2_eda.py 2>&1 | Out- ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last) 
+   ::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\Media\Desktop\Predictive_group_coursework_data\MSIN0097_Aviati
+on_Agents\agent_outputs\antigravity\task2_eda.py", line 28, in <module>
+    flights.groupby('AIRLINE')['ARRIVAL_DELAY', 'DELAYED_15']
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Media\Desktop\Predictive_group_coursework_data\venv\Lib\site-p
+ackages\pandas\core\groupby\generic.py", line 2934, in __getitem__
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Cannot subset columns with a tuple with more than one element. Use 
+a list instead.
