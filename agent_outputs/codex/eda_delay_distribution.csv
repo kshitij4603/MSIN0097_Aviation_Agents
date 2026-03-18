@@ -1,0 +1,15 @@
+metric,value
+completed_flights,5714008.0
+mean_delay_minutes,4.407057357987598
+median_delay_minutes,-5.0
+std_delay_minutes,39.2712970938864
+min_delay_minutes,-87.0
+p05_delay_minutes,-25.0
+p25_delay_minutes,-13.0
+p75_delay_minutes,8.0
+p95_delay_minutes,66.0
+max_delay_minutes,1971.0
+skewness,6.502896211878403
+share_early_or_on_time_pct,63.47754500868742
+share_15plus_delay_pct,18.611086998828146
+share_60plus_delay_pct,5.69811942860423

@@ -1,0 +1,6 @@
+feature,feature_type,association_method,association_strength,absolute_association_strength
+SCHEDULED_DEPARTURE,numeric,spearman,0.13139150443415726,0.13139150443415726
+SCHEDULED_TIME,numeric,spearman,-0.08937523744382249,0.08937523744382249
+AIRLINE,categorical,correlation_ratio_eta,0.072339636503818,0.072339636503818
+ORIGIN_AIRPORT,categorical,correlation_ratio_eta,0.0722891545538335,0.0722891545538335
+DESTINATION_AIRPORT,categorical,correlation_ratio_eta,0.0668281770906498,0.0668281770906498
