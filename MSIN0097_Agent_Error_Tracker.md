@@ -126,4 +126,66 @@ Four of the top seven most important features are leakage columns.
 | **Antigravity** | SimpleImputer on cancelled flights | TAXI_OUT, ELAPSED_TIME, AIR_TIME, TAXI_IN leakage (+4pp ROC-AUC inflation) | **2 (1 Critical, 1 High)** |
 
 ---
+
+## Task 4: Target Variable Used as Feature (Antigravity)
+**Status:** ⚠️ UNRESOLVED — Will be corrected in **Task 6**.
+**Audited:** 2026-03-18
+
+### Error Log — Antigravity
+
+**File:** `agent_outputs/antigravity/task4_optimized_model.py`
+**Error type:** Catastrophic target leakage — target variable used directly as a training feature
+**Severity:** 🔴🔴 CRITICAL (beyond severe)
+
+**Evidence:**
+```python
+# task4_optimized_model.py — line 69
+candidate_features = [
+    ..., 'ARRIVAL_DELAY', ...   # ← TARGET VARIABLE
+]
+# line 34
+df['DELAY_15'] = (df['ARRIVAL_DELAY'] > 15).astype(int)   # ← TARGET DERIVED FROM ARRIVAL_DELAY
+```
+
+Additionally:
+```python
+# line 55
+df['DELAY_DIFF'] = df['ARRIVAL_DELAY'] - df['DEPARTURE_DELAY']  # encodes ARRIVAL_DELAY algebraically
+```
+
+**Observed impact:** All metrics — baseline RF and optimized XGBoost alike — achieved perfect scores:
+- ROC-AUC = 1.0000
+- F1 = 1.0000
+- Accuracy = 1.0000
+- Precision = 1.0000, Recall = 1.0000
+
+**Why:** The model can trivially infer `DELAY_15 = (ARRIVAL_DELAY > 15)` by directly inspecting the `ARRIVAL_DELAY` feature. No learning occurs. This is not a model — it is a deterministic rule lookup masquerading as a classifier.
+
+**Resolution:** Remove `ARRIVAL_DELAY`, `DELAY_DIFF`, and all other post-arrival columns from the feature set. Task 6.
+
+---
+
+## Task 4: Leakage Persists — Codex Adds Derivatives
+**Status:** ⚠️ UNRESOLVED — Will be corrected in **Task 6**.
+**Audited:** 2026-03-18
+
+**File:** `agent_outputs/codex/task4_optimized_model.py`
+
+Codex not only retained `DEPARTURE_DELAY` from Task 3 but added two additional derivatives:
+- `DEPARTURE_DELAY_CLIPPED = DEPARTURE_DELAY.clip(-30, 180)`
+- `DEPARTURE_DELAY_15_PLUS = (DEPARTURE_DELAY > 15).astype(int)`
+
+Three correlated representations of the same leakage signal are now in the feature set. Paradoxically, this caused **metric degradation** (ROC-AUC −0.43pp, F1 −1.59pp) because additional noisy encodings of an already-saturating feature provide no marginal value.
+
+---
+
+## Cumulative Error Summary (Updated Task 4)
+
+| Agent | Task 1 Error | Task 3 Error | Task 4 Error | Total Critical |
+|---|---|---|---|---|
+| **Claude** | None | None | None | **0** |
+| **Codex** | None | DEPARTURE_DELAY leakage | DEPARTURE_DELAY + 2 derivatives | **1 Critical (escalating)** |
+| **Antigravity** | SimpleImputer on cancelled flights | Operational leakage (TAXI_OUT, etc.) | **TARGET VARIABLE as feature (ROC-AUC=1.0)** | **3 (2 Critical, 1 High)** |
+
+---
 *Last updated: 2026-03-18 by Claude Code Auditor*
