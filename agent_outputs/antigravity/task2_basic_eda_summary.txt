@@ -1,0 +1,1 @@
+Top 3 findings: (1) Arrival delay distribution is strongly right-skewed with heavy tail in the >90th percentile; (2) a small group of airlines account for highest delay rates, and route-level analysis shows concentrated risk on certain O-D pairs; (3) delay risk spikes in afternoon/evening departure hours, so prioritizing early-day schedules reduces exposure.
