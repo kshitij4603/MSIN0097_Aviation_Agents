@@ -188,4 +188,52 @@ Three correlated representations of the same leakage signal are now in the featu
 | **Antigravity** | SimpleImputer on cancelled flights | Operational leakage (TAXI_OUT, etc.) | **TARGET VARIABLE as feature (ROC-AUC=1.0)** | **3 (2 Critical, 1 High)** |
 
 ---
+
+## Task 5: Leakage Audit & Reality Check
+**Status:** ✅ RESOLVED — All agents self-corrected and retrained on clean feature sets.
+**Audited:** 2026-03-18
+
+### Resolution Summary
+
+| Agent | Task 4 ROC-AUC | Task 5 (Honest) ROC-AUC | AUC Drop | Root Cause Removed |
+|---|---|---|---|---|
+| **Claude** | 0.7108 | **0.7108** | **±0.0000** | None (was already clean) |
+| **Codex** | 0.9332 | **0.6647** | **−0.2685** | `DEPARTURE_DELAY`, `DEPARTURE_DELAY_CLIPPED`, `DEPARTURE_DELAY_15_PLUS` |
+| **Antigravity** | 1.0000 | **0.6741** | **−0.3259** | `ARRIVAL_DELAY` (target variable), `DEPARTURE_DELAY`, `AIR_TIME`, `TAXI_OUT`, `TAXI_IN`, `DELAY_DIFF`, `AVG_SPEED`, `TAXI_SUM` |
+
+### Key Findings
+
+**Claude (Self-Verification):**
+- Permutation importance (8 repeats, 5k test subsample) confirms zero leakage
+- Top feature: `MONTH` at 0.0635 AUC units — appropriate distribution across 18 features
+- AUC delta = +0.0000 vs Task 4 reference — no inflation existed to remove
+- Production ceiling confirmed: ROC-AUC ≈ 0.71 for 24-hour advance delay prediction
+
+**Codex (Self-Correction):**
+- Correctly identified and removed 3 leakage columns (all derivatives of `DEPARTURE_DELAY`)
+- Honest AUC 0.6647 vs leaked 0.9332 — confirms **+26.85pp artificial inflation** in Task 4
+- Used permutation importance (5 repeats, 4k subsample) for verification
+- Clean model uses HistGradientBoostingClassifier on strictly pre-departure features
+
+**Antigravity (Self-Correction):**
+- Correctly identified catastrophic target leakage (`ARRIVAL_DELAY` used as feature while `DELAY_15 = ARRIVAL_DELAY > 15`)
+- Honest AUC 0.6741 vs leaked 1.0000 — confirms **+32.59pp artificial inflation** in Task 4
+- Largest AUC drop of all three agents; model was a deterministic rule lookup, not a classifier
+- Clean model retrained on `MONTH`, `DAY_OF_WEEK`, `SCHED_DEP_HOUR`, `SCHED_ARR_HOUR`, `DISTANCE`, `SCHEDULED_TIME` + airline/origin/dest one-hot encodings
+
+### Honest Production Baseline Established
+
+All three agents converge to ROC-AUC ≈ **0.66–0.71** on pre-departure features alone. This is the honest, production-ready performance ceiling for 24-hour advance flight delay prediction on the 2015 US DOT Aviation Dataset.
+
+---
+
+## Cumulative Error Summary (Final — All Tasks)
+
+| Agent | Task 1 | Task 3 | Task 4 | Task 5 Resolution | Total Critical |
+|---|---|---|---|---|---|
+| **Claude** | None | None | None | ✅ Zero leakage confirmed (perm. importance) | **0** |
+| **Codex** | None | DEPARTURE_DELAY leakage (+23.1pp) | +2 DEPARTURE_DELAY derivatives (+26.85pp) | ✅ All 3 derivatives removed; AUC −0.2685 | **1 Critical (resolved)** |
+| **Antigravity** | SimpleImputer on cancelled flights | Operational leakage (+4.1pp) | TARGET VARIABLE as feature (AUC=1.0, +32.59pp) | ✅ All leakage removed; AUC −0.3259 | **3 (resolved)** |
+
+---
 *Last updated: 2026-03-18 by Claude Code Auditor*
