@@ -1,4 +1,7 @@
+import os
 from pathlib import Path
+
+os.environ.setdefault("MPLCONFIGDIR", str(Path(__file__).resolve().parent / ".mplconfig"))
 
 import matplotlib
 
@@ -20,10 +23,8 @@ VIF_SAMPLE_SIZE = 75_000
 MODEL_SAMPLE_SIZE = 150_000
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parents[1]
-DATA_DIR = REPO_ROOT / "data"
 OUTPUT_DIR = SCRIPT_DIR
-FLIGHTS_PATH = DATA_DIR / "flights.csv"
+FLIGHTS_PATH = SCRIPT_DIR / "../../data/flights.csv"
 
 
 def derive_time_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -206,6 +207,7 @@ def save_heteroscedasticity_plot(df: pd.DataFrame) -> tuple[float, float]:
 
 def main() -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    (OUTPUT_DIR / ".mplconfig").mkdir(exist_ok=True)
 
     flights = sample_flights()
 
