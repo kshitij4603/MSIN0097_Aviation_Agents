@@ -1,14 +1,15 @@
 import pandas as pd
 import numpy as np
 from sklearn.impute import SimpleImputer
+from pathlib import Path
 import os
 
 def load_and_preprocess_data():
-    # File paths
-    base_dir = r"c:\Users\Media\Desktop\Predictive_group_coursework_data"
-    flights_path = os.path.join(base_dir, "flights.csv")
-    airlines_path = os.path.join(base_dir, "airlines.csv")
-    airports_path = os.path.join(base_dir, "airports.csv")
+    # File paths (dynamic relative pathing)
+    root_dir = Path(__file__).resolve().parents[2]  # MSIN0097_Aviation_Agents
+    flights_path = root_dir / 'data' / 'flights.csv'  # ../../data/flights.csv from agent_outputs/antigravity
+    airlines_path = root_dir.parent / 'airlines.csv'  # workspace root
+    airports_path = root_dir.parent / 'airports.csv'  # workspace root
 
     try:
         # Load datasets

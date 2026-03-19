@@ -41,6 +41,7 @@ python agent_outputs/antigravity/run_pipeline.py
 ```
 
 This will execute, in order:
+- `agent_outputs/antigravity/prepare_data.py`
 - `agent_outputs/antigravity/task2_eda.py`
 - `agent_outputs/antigravity/task2_basic_eda.py`
 - `agent_outputs/antigravity/task2_advanced_stats.py`
@@ -58,4 +59,10 @@ Check `agent_outputs/antigravity/` for:
 
 ## Reproducibility guarantee
 
-I have pinned dependencies in `agent_outputs/antigravity/requirements.txt`, used a strict `RANDOM_SEED = 42` in every script, and loader paths are exact relative dynamic locations (`../../data/flights.csv`) in the code. The master script `agent_outputs/antigravity/run_pipeline.py` runs each piece in deterministic order and stops on error, guaranteeing the same ROC-AUC and metrics as the audited run when using the same dataset and environment.
+1. Dependencies are pinned in `agent_outputs/antigravity/requirements.txt` (numpy, pandas, matplotlib, seaborn, scikit-learn, statsmodels, xgboost, joblib, python-dateutil, pytz) and should be installed before running the pipeline.
+2. Every modeling script uses `RANDOM_SEED = 42` and fixed `train_test_split(random_state=RANDOM_SEED, stratify=y)` to make train/test split deterministic.
+3. All data loads use dynamic relative pathing to the raw dataset as required:
+   - `Path(__file__).resolve().parents[2] / 'data' / 'flights.csv'` (i.e., `../../data/flights.csv` from the `agent_outputs/antigravity` folder).
+4. `run_pipeline.py` runs scripts in strict sequential order and raises on first failure to avoid partial results.
+
+This ensures any new team can clone the repo, install packages, and run the pipeline to reproduce the same final audited ROC-AUC score and derived artifacts with no pathing, missing dependency, or randomness drift issues.

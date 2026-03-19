@@ -2,8 +2,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parents[1]
+BASE_DIR = Path(__file__).resolve().parent
 SCRIPTS = [
+    BASE_DIR / 'prepare_data.py',
     BASE_DIR / 'task2_eda.py',
     BASE_DIR / 'task2_basic_eda.py',
     BASE_DIR / 'task2_advanced_stats.py',
